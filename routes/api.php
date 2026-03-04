@@ -4,41 +4,42 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\AdminController;
-use App\Http\Controllers\DocumentationController;
-use App\Http\Controllers\Api\GameApiController; // <--- DODANE
-use Illuminate\Support\Facades\Http;
+use App\Http\Controllers\LibraryController; // ← DODAJ TĘ LINIĘ!
+use App\Http\Controllers\Api\GameApiController;
 
-// AUTORYZACJA
+// PUBLICZNE API
 Route::post('/auth/register', [AuthController::class, 'register']);
 Route::post('/auth/login', [AuthController::class, 'login']);
-Route::middleware('auth:sanctum')->post('/auth/logout', [AuthController::class, 'logout']);
+Route::get('/games/search', [GameApiController::class, 'search']);
 
-// PROFIL
-Route::middleware('auth:sanctum')->patch('/profile/password', [ProfileController::class, 'updatePassword']);
+// PROTEGROWANE API (Sanctum token)
+Route::middleware('auth:sanctum')->group(function () {
+    // AUTORYZACJA
+    Route::post('/auth/logout', [AuthController::class, 'logout']);
+    Route::get('/check-auth', function () {
+        return response()->json(['authenticated' => true]);
+    });
+    
+    // PROFIL API
+    Route::prefix('profile')->group(function () {
+        Route::get('/', [ProfileController::class, 'apiShow']);          // GET /api/profile
+        Route::patch('/', [ProfileController::class, 'apiUpdate']);      // PATCH /api/profile
+        Route::delete('/', [ProfileController::class, 'apiDestroy']);    // DELETE /api/profile
+        Route::patch('/password', [ProfileController::class, 'updatePassword']); // już masz
+    });
+    
+    // ADMIN API
+    Route::middleware('admin')->prefix('admin')->group(function () {
+    	Route::get('/users', [AdminController::class, 'listUsers']);
+    	Route::get('/users/{id}', [AdminController::class, 'apiShowUser']);      // ← DODANE
+    	Route::patch('/users/{id}', [AdminController::class, 'apiUpdateUser']);  // ← DODANE
+    	Route::delete('/users/{id}', [AdminController::class, 'deleteUser']);
+    	Route::patch('/users/{id}/toggle-admin', [AdminController::class, 'apiToggleAdmin']);
+    });
 
-// PANEL ADMINA
-Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->group(function () {
-    Route::get('/users', [AdminController::class, 'listUsers']);
-    Route::get('/users/{id}', [AdminController::class, 'showUser']);
-    Route::patch('/users/{id}', [AdminController::class, 'updateUser']);
-    Route::delete('/users/{id}', [AdminController::class, 'deleteUser']);
-});
-
-// DOKUMENTACJA
-Route::get('/documentation', [DocumentationController::class, 'index']);
-
-// WYSZUKIWARKA GIER (Nowa trasa)
-Route::get('/games/search', [GameApiController::class, 'search']); // <--- DODANE
-
-// RAWG — NAJPROSTSZY MOŻLIWY TEST JEDNEJ GRY
-Route::get('/rawg-one', function () {
-    $id = 3498; 
-    $response = Http::get(config('rawg.base_url') . "/games/{$id}", [
-        'key' => config('rawg.key'),
-    ]);
-    return $response->json();
-});
-
-Route::middleware('auth:sanctum')->get('/check-auth', function () {
-    return response()->json(['authenticated' => true]);
+    // BIBLIOTEKA API - POPRAWIONE!
+    Route::get('/library', [LibraryController::class, 'apiIndex']);     // ← apiIndex
+    Route::post('/library', [LibraryController::class, 'apiStore']);    // ← apiStore
+    Route::put('/library/{id}', [LibraryController::class, 'apiUpdate']);     // ← apiUpdate
+    Route::delete('/library/{id}', [LibraryController::class, 'apiDestroy']); // ← apiDestroy
 });

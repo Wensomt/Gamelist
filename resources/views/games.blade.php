@@ -19,31 +19,33 @@
         .nav-link-user { color: #f5f5f5 !important; font-weight: 500; }
         .dropdown-menu-dark { background-color: #111; border: 1px solid #1f1f1f; box-shadow: 0 5px 15px rgba(220, 53, 69, 0.1); }
         .dropdown-item:hover { color: #fff; background: rgba(220, 53, 69, 0.1); border-left: 4px solid #dc3545; transition: 0.3s; }
-        
+
         /* Karty i UI */
         .card-custom { background-color: #111; border: 1px solid #1f1f1f; border-radius: 12px; box-shadow: 0 0 25px rgba(255, 0, 0, 0.05); transition: transform 0.2s; }
         .card-custom:hover { transform: translateY(-5px); border-color: #dc3545; }
         .btn-red { background-color: #dc3545; border: none; color: white; }
         .btn-red:hover { background-color: #b52a37; color: white; }
         .mb-1, .mb-0{ color: white; }
-        
+
         /* Styl dla inputa */
         .search-input { background-color: #1a1a1a; border: 1px solid #333; color: white; }
         .search-input:focus { background-color: #1a1a1a; color: white; border-color: #dc3545; box-shadow: none; }
-        
+
         /* Obrazek gry */
         .game-img { height: 200px; object-fit: cover; border-top-left-radius: 12px; border-top-right-radius: 12px; }
-        
+
         /* POPRAWIONY BADGE OCENY */
-        .badge-rating { 
-            position: absolute; 
-            top: 10px; 
-            right: 10px; 
-            background-color: rgba(0,0,0,0.8); 
-            border: 1px solid #dc3545; 
-            color: #dc3545; 
+        .badge-rating {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: rgba(0,0,0,0.8);
+            border: 1px solid #dc3545;
+            color: #dc3545;
             padding: 5px 10px; /* Dodany padding dla lepszego wyglądu */
         }
+
+        #searchInput::placeholder{ color: #8a8a8a; }
     </style>
 </head>
 <body>
@@ -59,6 +61,22 @@
                 </a>
                 <ul class="dropdown-menu dropdown-menu-end dropdown-menu-dark">
                     <li>
+                        <a class="dropdown-item" href="{{ route('profile.edit') }}">
+                            <i class="bi bi-person"></i> Twój Profil
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="dropdown-item" href="{{ route('library.index') }}">
+                            <i class="bi bi-collection me-2"></i> Biblioteka
+                        </a>
+                    </li>
+                    @if(auth()->user()->is_admin)
+                        <a class="dropdown-item" href="{{ route('admin.index') }}">
+                            <i class="bi bi-person"></i> Panel admina
+                        </a>
+                    @endif
+                    <li><hr class="dropdown-divider border-secondary"></li>
+                    <li>
                          <form action="{{ route('logout') }}" method="POST">
                             @csrf
                             <button type="submit" class="dropdown-item text-danger">Wyloguj się</button>
@@ -70,7 +88,7 @@
     </nav>
 
     <div class="container mt-5">
-        
+
         {{-- SEKCJA WYSZUKIWANIA --}}
         <div class="row mb-5 justify-content-center">
             <div class="col-md-8 text-center">
@@ -130,7 +148,7 @@
         const container = document.getElementById('games-container');
         const loading = document.getElementById('loading');
         const pagination = document.getElementById('pagination-container');
-        
+
         if (!query) return;
 
         if(page === 1) {
@@ -165,14 +183,14 @@
     // POPRAWIONA FUNKCJA RENDERUJĄCA
     function renderGames(games) {
         const container = document.getElementById('games-container');
-        
+
         games.forEach(game => {
             // Przeliczanie oceny z 5 na 10
             const rating10 = (game.rating * 2).toFixed(1);
-            
+
             const image = game.background_image ? game.background_image : 'https://via.placeholder.com/400x200?text=No+Image';
             const year = game.released ? game.released.substring(0, 4) : 'TBA';
-            
+            const detailsUrl = `/games/${game.id}`;
             const html = `
                 <div class="col-md-6 col-lg-4">
                     <div class="card card-custom h-100">
@@ -185,7 +203,7 @@
                             <p class="card-text text-secondary mb-4">
                                 <small>Data wydania: ${year}</small>
                             </p>
-                            <a href="#" class="btn btn-outline-light btn-sm mt-auto stretched-link">Szczegóły</a>
+                            <a href="${detailsUrl}" class="btn btn-outline-light btn-sm mt-auto stretched-link">Szczegóły</a>
                         </div>
                     </div>
                 </div>
@@ -203,9 +221,9 @@
         pagination.classList.remove('d-none');
         pageInfo.innerText = `Strona ${page}`;
 
-        prevBtn.disabled = !prevUrl; 
+        prevBtn.disabled = !prevUrl;
         nextBtn.disabled = !nextUrl;
-        
+
         if(!prevUrl) {
             prevBtn.classList.replace('btn-outline-danger', 'btn-outline-secondary');
         } else {

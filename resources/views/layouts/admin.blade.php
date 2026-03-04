@@ -36,7 +36,21 @@
         <nav class="nav flex-column mt-4">
             <a class="nav-link" href="{{ route('admin.index') }}"><i class="bi bi-speedometer2"></i> Dashboard</a>
             <a class="nav-link" href="{{ route('admin.users') }}"><i class="bi bi-people"></i> Użytkownicy</a>
-            <a class="nav-link mt-5 text-secondary" href="{{ route('games') }}"><i class="bi bi-arrow-left"></i> Powrót do strony</a>
+            
+            <hr class="mx-3 border-secondary my-3">
+            
+            <a class="nav-link" href="{{ route('profile.edit') }}">
+                <i class="bi bi-person"></i> Twój Profil
+            </a>
+            <a class="nav-link" href="{{ route('library.index') }}">
+                <i class="bi bi-collection"></i> Biblioteka
+            </a>
+
+            <a class="nav-link" href="{{ route('games') }}">
+                <i class="bi bi-search"></i> Wyszukiwarka
+            </a>
+
+            <hr class="mx-3 border-secondary my-3">
             
             <form action="{{ route('logout') }}" method="POST" class="mt-2 px-3">
                 @csrf
